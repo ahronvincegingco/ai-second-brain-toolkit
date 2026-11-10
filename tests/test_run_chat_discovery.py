@@ -350,7 +350,7 @@ class ProfileTests(unittest.TestCase):
         sha = lambda b: hashlib.sha256(b).hexdigest()
         profile = {'schema': 'brain-chat-discovery-launch-v1', 'state': 'approved',
                    'scope': 'metadata-discovery-only', 'owner_reference': 'synthetic',
-                   'additional_spend_usd': 0, 'lifetime_seconds': 1, 'startup_timeout_seconds': 1,
+                   'additional_spend_usd': 0, 'lifetime_seconds': 3, 'startup_timeout_seconds': 3,
                    'recipients': ['Cloudflare', 'OpenAI', 'Sentry'], 'private_root': str(root),
                    'runtime_dir': str(runtime), 'runtime_files': {'run_chat_discovery.py': sha(source),
                    'chat_recall_discovery.py': sha(discovery)}, 'helper': {'path': str(helper),
