@@ -9,6 +9,14 @@ import re
 from pathlib import Path, PurePosixPath
 from urllib.parse import quote
 
+try:
+    from . import _compat  # noqa: F401
+except (ImportError, ValueError):
+    try:
+        import _compat  # noqa: F401
+    except ImportError:
+        pass
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()

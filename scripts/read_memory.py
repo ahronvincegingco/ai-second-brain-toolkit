@@ -9,6 +9,14 @@ import json
 import re
 from pathlib import Path
 
+try:
+    from . import _compat  # noqa: F401
+except (ImportError, ValueError):
+    try:
+        import _compat  # noqa: F401
+    except ImportError:
+        pass
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()

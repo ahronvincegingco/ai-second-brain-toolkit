@@ -15,3 +15,14 @@ if not hasattr(Path, "is_junction"):
             return False
 
     Path.is_junction = _is_junction  # type: ignore[attr-defined]
+
+if not hasattr(os.path, "isjunction"):
+    def _os_isjunction(path: str | bytes | os.PathLike) -> bool:
+        try:
+            st = os.lstat(path)
+            tag = getattr(st, "st_reparse_tag", 0)
+            return bool(tag == 0xA0000003 or (tag & 0x20000000))
+        except (OSError, ValueError):
+            return False
+
+    os.path.isjunction = _os_isjunction  # type: ignore[attr-defined]

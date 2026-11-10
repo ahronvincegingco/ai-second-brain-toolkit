@@ -1,5 +1,12 @@
 """Local stdio MCP for an owner-configured selected Markdown corpus. No writes."""
 import os
+try:
+    from . import _compat  # noqa: F401
+except (ImportError, ValueError):
+    try:
+        import _compat  # noqa: F401
+    except ImportError:
+        pass
 from typing import Annotated
 from pydantic import Field
 from mcp.server.mcpserver import MCPServer

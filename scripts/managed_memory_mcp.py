@@ -1,5 +1,12 @@
 """Owner-configured read-only managed recall over local stdio. No write tools."""
 import os
+try:
+    from . import _compat  # noqa: F401
+except (ImportError, ValueError):
+    try:
+        import _compat  # noqa: F401
+    except ImportError:
+        pass
 from typing import Annotated
 from pydantic import Field
 from mcp.server.mcpserver import MCPServer
