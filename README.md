@@ -1,3 +1,9 @@
+# 🧠 Second Brain Toolkit
+
+**Private, fail-closed personal memory engine for Obsidian & AI coding agents.**
+
+Memory enables AI agents to remember your architecture decisions, project milestones, and coding style across sessions. This toolkit connects your local Obsidian vault to any MCP-compatible AI agent over standard input/output (stdio IPC)—with zero cloud databases, zero subscription fees, and strict cryptographic privacy.
+
 <p align="center">
   <img src="assets/banner.svg" alt="Second Brain" width="100%" />
 </p>
@@ -24,24 +30,15 @@
   <b>Zero cloud subscriptions</b> • <b>Strict local stdio IPC</b> • <b>Single-source Markdown truth</b> • <b>No-clobber staging</b>
 </p>
 
-<p align="center">
-  <a href="#-quickstart-30-seconds">Quickstart</a> •
-  <a href="#-commands--capabilities">Commands</a> •
-  <a href="#️-architecture--data-flow">Architecture</a> •
-  <a href="#-universal-ai-client-setup">Client Setup</a> •
-  <a href="SECURITY.md">Security</a> •
-  <a href="CONTRIBUTING.md">Contributing</a>
-</p>
-
 ---
 
-## ⚡ Commands & Capabilities
+## Commands
 
-7 tools that map to the development and memory lifecycle. Each one activates the right safety skills automatically.
+7 commands and tools that map to your local memory lifecycle. Each one enforces strict fail-closed boundaries automatically.
 
 | What you're doing | Command / Tool | Key principle |
 |---|---|---|
-| **Capture session outcomes** | `/brain-save` | Explicit current-context staging; zero silent background scraping |
+| **Capture session outcomes** | `/brain-save` | Explicit current-context staging; zero background scraping |
 | **Stage candidate drafts** | `scripts/migrate.py` | Isolated staging outside Git and OneDrive |
 | **Verify cryptographic pins** | `SHA-256 Grant Guard` | Tamper-evident integrity; changed bytes refuse replay |
 | **Atomic vault publication** | `scripts/publish_memory.py` | Strict no-clobber; existing notes are never overwritten |
@@ -51,80 +48,33 @@
 
 ---
 
-## 🌟 Why AI Second Brain?
+## Quick Start
 
-Most AI memory systems require paid cloud databases, continuous internet exposure, or sending your raw personal notes to external servers.
-
-**AI Second Brain Toolkit** takes the opposite approach:
-- 🔒 **100% Local & Private:** Runs entirely on your local machine over standard input/output (stdio IPC). Zero web tunnels, zero listening network ports, and zero leakage of your OS username or local drive paths.
-- 💰 **$0 Monthly Subscriptions:** Works directly with your local Obsidian vault (and OneDrive/iCloud sync) and your existing AI desktop apps.
-- 🛡️ **Cryptographic Integrity & Safety:** Uses SHA-256 grant pinning, no-clobber atomic writes, DOS-device protection, and boundary traversal defenses.
-- 🤖 **Universal AI Client Support:** Interoperable with **Claude Desktop / Claude Code**, **Cursor**, **GitHub Copilot / Codex**, and **Google Antigravity**.
-
----
-
-## 🏛️ Architecture & Data Flow
-
-```mermaid
-flowchart LR
-    subgraph Host [" 🔒 Local Host Machine (100% Private) "]
-        direction LR
-        subgraph Vault [" 📂 Obsidian Vault "]
-            V1["references/"]
-            V2["permanent/"]
-            V3["projects/"]
-            V4["logs/brain-save/"]
-        end
-
-        subgraph Engine [" ⚙️ Second Brain Engine "]
-            Guard["🛡️ Policy & SHA-256 Guard<br/>(No-Clobber / Fail-Closed)"]
-            MCP["🔌 Local stdio MCP Server<br/>(second-brain-managed)"]
-        end
-
-        subgraph Agents [" 🤖 Your AI Coding & Chat Agents "]
-            A1["Claude Desktop / Code"]
-            A2["Antigravity / Cursor"]
-            A3["GitHub Copilot / Codex"]
-        end
-    end
-
-    Vault <==> Guard
-    Guard <==> MCP
-    MCP <== "Local Stdio IPC (No Internet / No Tunnel)" ==> Agents
-```
-
----
-
-## 🚀 3-Step Quickstart
-
-### Step 1: Validate Your Environment
-Clone the repository and run the non-destructive environment health check:
+**Fastest path — clone and install in 30 seconds:**
 
 ```powershell
-# In PowerShell:
-.\scripts\install.ps1 --check-only
-```
-The diagnostics tool checks for Python 3.11+, automatically locates your Obsidian vault, and validates dependencies.
+# 1. Clone the repository
+git clone https://github.com/Heiron8/ai-second-brain-toolkit.git
+cd ai-second-brain-toolkit
 
----
-
-### Step 2: Initialize Private Workspace
-Run the installer to set up your isolated private staging workspace and baseline templates (strict no-clobber):
-
-```powershell
+# 2. Run the non-destructive installer
 .\scripts\install.ps1
 ```
-> [!NOTE]
-> All personal transcripts, cryptographic grants, and private notes live outside this repository (in `.ai-second-brain-private/`). Your personal data is never committed to Git.
+
+The installer auto-discovers your Obsidian vault, initializes your private staging workspace outside Git, validates your dependencies, and runs self-diagnostics.
+
+> **Privacy guarantee:** All personal transcripts, cryptographic grants, and private notes live outside this repository (in `.ai-second-brain-private/`). Your personal data is never committed to Git.
 
 ---
 
-### Step 3: Connect Your AI Agent
+## Client Setup
 
-Add the local MCP server to your AI tool of choice.
+Pick your AI client below to connect your Second Brain via local Model Context Protocol (MCP):
 
-#### For Claude Desktop / Cursor:
-Add to your `claude_desktop_config.json` or Cursor MCP settings:
+<details>
+<summary><b>Claude Desktop &amp; Claude Code</b></summary>
+
+Add to your `claude_desktop_config.json` (or Claude Code settings):
 
 ```json
 {
@@ -141,8 +91,39 @@ Add to your `claude_desktop_config.json` or Cursor MCP settings:
   }
 }
 ```
+</details>
 
-#### For Codex / GitHub Copilot CLI:
+<details>
+<summary><b>Cursor</b></summary>
+
+Go to **Settings → Features → MCP → Add New MCP Server**:
+- **Name:** `second_brain`
+- **Type:** `command`
+- **Command:** `python -B C:\path\to\AI-Second-Brain-Tools\scripts\managed_memory_mcp.py`
+- Set environment variables (`SECOND_BRAIN_MANAGED_GRANT`, `SECOND_BRAIN_MANAGED_GRANT_SHA256`, `SECOND_BRAIN_MANAGED_CLIENT`).
+</details>
+
+<details>
+<summary><b>Antigravity / Gemini CLI</b></summary>
+
+Add to your `.gemini/antigravity-cli/mcp/second_brain.json`:
+
+```json
+{
+  "command": "python",
+  "args": ["-B", "C:\\path\\to\\AI-Second-Brain-Tools\\scripts\\managed_memory_mcp.py"],
+  "env": {
+    "SECOND_BRAIN_MANAGED_GRANT": "C:\\path\\to\\.ai-second-brain-private\\grants\\managed-grant.json",
+    "SECOND_BRAIN_MANAGED_GRANT_SHA256": "<YOUR_GRANT_SHA256>",
+    "SECOND_BRAIN_MANAGED_CLIENT": "antigravity-google"
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Codex &amp; GitHub Copilot CLI</b></summary>
+
 Add to `.codex/config.toml`:
 
 ```toml
@@ -151,65 +132,21 @@ command = "python"
 args = ["-B", "C:\\path\\to\\AI-Second-Brain-Tools\\scripts\\managed_memory_mcp.py"]
 env = { SECOND_BRAIN_MANAGED_GRANT = "C:\\path\\to\\.ai-second-brain-private\\grants\\managed-grant.json", SECOND_BRAIN_MANAGED_GRANT_SHA256 = "<YOUR_GRANT_SHA256>", SECOND_BRAIN_MANAGED_CLIENT = "codex-openai" }
 ```
+</details>
 
 ---
 
-## ⚡ Core Skills & Daily Workflow
+## Core Principles & Guarantees
 
-| Skill / Command | Description | What It Does |
-| :--- | :--- | :--- |
-| **`/brain-recall <query>`** | Selective semantic memory recall | Searches your enrolled notes within strict boundaries (max 40 lines, 8000 characters). Returns excerpts, source hashes, and clickable `obsidian://` links. |
-| **`/brain-save`** | Context outcome capture | Privately stages and publishes verified decisions, lessons learned, and progress notes into `logs/brain-save/`. Never clobbers existing knowledge. |
-
----
-
-## 📦 Component Readiness & Capabilities
-
-| Component | Status | Security & Verification |
-|---|---|---|
-| **Managed Markdown Reader (`scripts/managed_memory.py`)** | ✅ Production Ready | Bounded reads (≤40 lines), SHA-256 hash validation, DOS device checks, sanitized vault-relative paths. |
-| **Local Stdio MCP Transport (`scripts/managed_memory_mcp.py`)** | ✅ Production Ready | Standard input/output transport only. Error redaction prevents internal path disclosure. |
-| **Create-Only Memory Publisher (`scripts/publish_memory.py`)** | ✅ Production Ready | Strict no-clobber atomic writes with lock protection and recovery journaling. |
-| **Interactive Context Capture (`scripts/save_interactive_memory.py`)** | ✅ Production Ready | Stages proposals in private staging before owner publication. |
-| **Single-Command Installer & Health Check (`scripts/install_toolkit.py`)** | ✅ Production Ready | Zip-slip protection, junction/symlink dereference guards, automated vault discovery. |
-| **ChatGPT Historical Importer (`scripts/import_export.py`)** | ✅ Production Ready | Bounded intake of OpenAI data exports; synthesizes wiki-compatible source references. |
-| **Wiki Synthesis & Health (`scripts/wiki_memory.py`, `scripts/wiki_health.py`)** | ✅ Production Ready | Broken link detection, orphan analysis, and cross-session linking. |
+* **Fail-Closed by Design:** If a cryptographic grant hash drifts, a file path redirects through a symlink or junction, or an argument is out of bounds, the engine halts immediately.
+* **$0 Cloud Cost:** Runs entirely locally against your existing Obsidian vault and OneDrive/iCloud sync. Zero vector DB subscriptions, zero Pinecone, zero OpenAI embedding bills.
+* **Zero PII Exposure:** Runs strictly over local stdio IPC. All emitted citations use vault-relative paths (`references/note.md`) rather than host filesystem paths (`C:\Users\<username>\...`), ensuring your computer username and folder structure are never leaked to external AI providers.
+* **Single-Source Markdown Truth:** Your notes remain clean, human-readable Markdown files inside your Obsidian vault. No proprietary databases or out-of-sync indexes.
 
 ---
 
-## 🛡️ Security, Privacy & Boundary Guarantees
+## Documentation
 
-1. **No External Processing Without Explicit Approval:**
-   Enrolled notes carry `external_processing: false` by default. Model recall requires explicit owner grant approval.
-2. **Path & Device Boundary Protections:**
-   All path operations enforce strict boundary checks: Windows device names (`CON`, `PRN`, `AUX`, `NUL`), directory junctions, and path traversal sequences (`..`) are strictly rejected.
-3. **Anonymized Local Output:**
-   Citations return vault-relative paths (e.g. `references/user-profile.md`) rather than host filesystem paths (`C:\Users\<username>\...`), ensuring your computer username and folder structure are never leaked to cloud AI providers.
-4. **Hermetic Test Suite:**
-   All 454 unit tests run on synthetic, disposable fixtures. Zero personal notes or credentials exist in this repository.
-
----
-
-## 🧪 Running Tests
-
-Windows with CPython 3.13 is the primary tested environment (Python >= 3.11 supported):
-
-```powershell
-# Run the complete test suite (stdlib + optional MCP):
-python -m unittest discover -s tests -v
-```
-
-To install locked MCP runtime dependencies:
-```powershell
-python -m pip install --index-url https://pypi.org/simple --require-hashes -r requirements-mcp.lock
-```
-
----
-
-## 📚 Documentation Index
-
-- [Architecture & Contract Specification](docs/brain-memory-contract.md)
-- [Brain-Save Publishing Spec](docs/brain-save-publication-spec.md)
 - [Client Compatibility Guide](docs/client-compatibility.md)
 - [Export Intake & Migration](docs/export-intake.md)
 - [Wiki Health Diagnostics](docs/wiki-health.md)
@@ -219,7 +156,7 @@ python -m pip install --index-url https://pypi.org/simple --require-hashes -r re
 
 ---
 
-## 📄 License & Attribution
+## License & Attribution
 
 This toolkit is licensed under the [MIT License](LICENSE).  
 Copyright (c) 2026 Ahron Vince Gingco (Heiron8).
