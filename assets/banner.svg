@@ -1,76 +1,127 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 360" width="1100" height="360">
   <defs>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@800;900&amp;display=swap');
-      .hero-text {
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif;
-        font-weight: 900;
-        font-size: 215px;
-        letter-spacing: -7px;
-        fill: #050505;
-        line-height: 0.85;
-      }
-      .pill-text {
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: -0.2px;
-        text-anchor: middle;
-        dominant-baseline: middle;
-      }
+      .brand { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif; font-size: 15px; font-weight: 600; fill: #e6edf3; letter-spacing: -0.2px; }
+      .brand-dot { fill: #8b5cf6; }
+      .headline { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif; font-size: 54px; font-weight: 800; letter-spacing: -1.5px; fill: #ffffff; line-height: 1.05; }
+      .subline { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif; font-size: 18px; font-weight: 400; fill: #8b949e; letter-spacing: -0.2px; }
+      .pill-text { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif; font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+      .button-text { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif; font-size: 15px; font-weight: 700; fill: #0d1117; text-anchor: middle; dominant-baseline: middle; }
+      .caption { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", monospace, sans-serif; font-size: 12px; font-weight: 500; fill: #6e7681; text-anchor: middle; }
+      .matrix-node-inactive { fill: #21262d; }
+      .matrix-node-active { fill: #ffffff; }
+      .matrix-node-accent { fill: #8b5cf6; }
+      .matrix-line { stroke: #ffffff; stroke-width: 2.5; stroke-linecap: round; }
+      .matrix-line-accent { stroke: #8b5cf6; stroke-width: 2.5; stroke-linecap: round; }
     </style>
   </defs>
 
-  <!-- Clean Minimalist White Card Background (Matching Addy Osmani iOS Theme) -->
-  <rect width="1000" height="640" rx="20" fill="#ffffff" />
+  <!-- Dark Card Container -->
+  <rect width="1100" height="360" rx="14" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+
+  <!-- Vertical Divider Line (matching OSINTSearch reference) -->
+  <line x1="740" y1="36" x2="740" y2="324" stroke="#21262d" stroke-width="1.2" />
+
+  <!-- ================= LEFT COLUMN ================= -->
+  <!-- Top Brand Tag -->
+  <g transform="translate(64, 48)">
+    <!-- 4-Dot Mini Geometric Icon -->
+    <rect x="0" y="0" width="4" height="4" rx="1" fill="#8b5cf6" />
+    <rect x="6" y="0" width="4" height="4" rx="1" fill="#38bdf8" />
+    <rect x="0" y="6" width="4" height="4" rx="1" fill="#38bdf8" />
+    <rect x="6" y="6" width="4" height="4" rx="1" fill="#ffffff" />
+    <text x="18" y="8" class="brand">ai-second-brain-toolkit</text>
+  </g>
 
   <!-- Big Bold Typography -->
-  <!-- Line 1: Second (Top-Left Aligned) -->
-  <text x="60" y="225" class="hero-text">Second</text>
+  <text x="64" y="128" class="headline">Go deeper than</text>
+  <text x="64" y="184" class="headline">a chat context.</text>
 
-  <!-- Line 2: Brain (Bottom-Right Aligned) -->
-  <text x="940" y="440" class="hero-text" text-anchor="end">Brain</text>
+  <!-- Subtitle -->
+  <text x="64" y="232" class="subline">Single-source Markdown truth in Obsidian. Fail-closed local memory for AI agents.</text>
 
-  <!-- Colorful iOS Rounded Pill Badges Row -->
-  <!-- Pill 1: Capture (iOS System Blue #007AFF / #2563EB) -->
-  <g transform="translate(60, 526)">
-    <rect width="124" height="54" rx="27" fill="#2563eb" />
-    <text x="62" y="28" class="pill-text" fill="#ffffff">Capture</text>
+  <!-- iOS-Style Rounded Pill Capsules (Mixture from previous design) -->
+  <g transform="translate(64, 276)">
+    <!-- Pill 1: Capture -->
+    <g transform="translate(0, 0)">
+      <rect width="86" height="32" rx="16" fill="#2563eb" />
+      <text x="43" y="16.5" class="pill-text" fill="#ffffff">Capture</text>
+    </g>
+
+    <!-- Pill 2: Stage -->
+    <g transform="translate(94, 0)">
+      <rect width="74" height="32" rx="16" fill="#ea580c" />
+      <text x="37" y="16.5" class="pill-text" fill="#ffffff">Stage</text>
+    </g>
+
+    <!-- Pill 3: Verify -->
+    <g transform="translate(176, 0)">
+      <rect width="78" height="32" rx="16" fill="#facc15" />
+      <text x="39" y="16.5" class="pill-text" fill="#0f172a">Verify</text>
+    </g>
+
+    <!-- Pill 4: Vault -->
+    <g transform="translate(262, 0)">
+      <rect width="76" height="32" rx="16" fill="#7c3aed" />
+      <text x="38" y="16.5" class="pill-text" fill="#ffffff">Vault</text>
+    </g>
+
+    <!-- Pill 5: Recall -->
+    <g transform="translate(346, 0)">
+      <rect width="80" height="32" rx="16" fill="#0284c7" />
+      <text x="40" y="16.5" class="pill-text" fill="#ffffff">Recall</text>
+    </g>
+
+    <!-- Pill 6: Private -->
+    <g transform="translate(434, 0)">
+      <rect width="82" height="32" rx="16" fill="#e11d48" />
+      <text x="41" y="16.5" class="pill-text" fill="#ffffff">Private</text>
+    </g>
+
+    <!-- Pill 7: $0 Free -->
+    <g transform="translate(524, 0)">
+      <rect width="82" height="32" rx="16" fill="#16a34a" />
+      <text x="41" y="16.5" class="pill-text" fill="#ffffff">$0 Free</text>
+    </g>
   </g>
 
-  <!-- Pill 2: Stage (iOS Coral / Orange #EA580C) -->
-  <g transform="translate(196, 526)">
-    <rect width="108" height="54" rx="27" fill="#ea580c" />
-    <text x="54" y="28" class="pill-text" fill="#ffffff">Stage</text>
+  <!-- ================= RIGHT COLUMN ================= -->
+  <!-- 3x3 Geometric Connected Node Matrix (faithfully matching reference) -->
+  <g transform="translate(865, 46)">
+    <!-- Row 1 -->
+    <rect x="0" y="0" width="24" height="24" rx="5" class="matrix-node-inactive" />
+    <rect x="44" y="0" width="24" height="24" rx="5" class="matrix-node-active" />
+    <rect x="88" y="0" width="24" height="24" rx="5" class="matrix-node-inactive" />
+
+    <!-- Connecting line: (44,12) down to (44,56) -->
+    <line x1="56" y1="24" x2="56" y2="44" class="matrix-line" />
+
+    <!-- Row 2 -->
+    <rect x="0" y="44" width="24" height="24" rx="5" class="matrix-node-active" />
+    <!-- Connecting line: (24,56) right to (44,56) -->
+    <line x1="24" y1="56" x2="44" y2="56" class="matrix-line" />
+    
+    <!-- Center node (Obsidian Hub) -->
+    <rect x="44" y="44" width="24" height="24" rx="5" class="matrix-node-active" />
+    <rect x="88" y="44" width="24" height="24" rx="5" class="matrix-node-inactive" />
+
+    <!-- Connecting diagonal line: (68,68) down-right to (88,88) -->
+    <line x1="68" y1="68" x2="88" y2="88" class="matrix-line" />
+
+    <!-- Row 3 -->
+    <rect x="0" y="88" width="24" height="24" rx="5" class="matrix-node-inactive" />
+    <rect x="44" y="88" width="24" height="24" rx="5" class="matrix-node-inactive" />
+    <rect x="88" y="88" width="24" height="24" rx="5" class="matrix-node-active" />
   </g>
 
-  <!-- Pill 3: Verify (iOS Amber / Yellow #FACC15, Dark Text) -->
-  <g transform="translate(316, 526)">
-    <rect width="116" height="54" rx="27" fill="#facc15" />
-    <text x="58" y="28" class="pill-text" fill="#0f172a">Verify</text>
+  <!-- White Pill CTA Button (matching reference) -->
+  <g transform="translate(805, 216)">
+    <rect width="230" height="46" rx="6" fill="#ffffff" />
+    <text x="105" y="23" class="button-text">Try Second Brain</text>
+    <!-- Arrow Icon -->
+    <path d="M 172 23 L 186 23 M 181 18 L 186 23 L 181 28" stroke="#0d1117" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
   </g>
 
-  <!-- Pill 4: Vault (Obsidian Purple #7C3AED) -->
-  <g transform="translate(444, 526)">
-    <rect width="110" height="54" rx="27" fill="#7c3aed" />
-    <text x="55" y="28" class="pill-text" fill="#ffffff">Vault</text>
-  </g>
-
-  <!-- Pill 5: Recall (iOS Cyan / Sky Blue #0284C7) -->
-  <g transform="translate(566, 526)">
-    <rect width="116" height="54" rx="27" fill="#0284c7" />
-    <text x="58" y="28" class="pill-text" fill="#ffffff">Recall</text>
-  </g>
-
-  <!-- Pill 6: Private (iOS Rose / Crimson #E11D48) -->
-  <g transform="translate(694, 526)">
-    <rect width="122" height="54" rx="27" fill="#e11d48" />
-    <text x="61" y="28" class="pill-text" fill="#ffffff">Private</text>
-  </g>
-
-  <!-- Pill 7: $0 Free (iOS Emerald Green #16A34A) -->
-  <g transform="translate(828, 526)">
-    <rect width="112" height="54" rx="27" fill="#16a34a" />
-    <text x="56" y="28" class="pill-text" fill="#ffffff">$0 Free</text>
-  </g>
+  <!-- Bottom URL Caption -->
+  <text x="920" y="292" class="caption">100% Local Stdio • Zero Cloud Cost</text>
 </svg>
