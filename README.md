@@ -1,25 +1,55 @@
-<div align="center">
+<p align="center">
+  <img src="assets/banner.svg" alt="Second Brain" width="100%" />
+</p>
 
-<img src="assets/banner.svg" alt="AI Second Brain Toolkit Banner" width="100%" />
+```
+  CAPTURE           STAGE             GATE             VAULT            RECALL
+┌─────────┐      ┌───────────┐    ┌───────────┐    ┌───────────┐      ┌─────────┐
+│ AI Chat │ ───> │ Candidate │ ─> │  SHA-256  │ ─> │ Canonical │ ───> │ Any AI  │
+│ Desktop │      │  Staging  │    │  Policy   │    │ Vault .md │      │  Agent  │
+└─────────┘      └───────────┘    └───────────┘    └───────────┘      └─────────┘
+ /brain-save      fail-closed      no-clobber        Obsidian        /brain-recall
+```
 
-# 🧠 AI Second Brain Toolkit
-### *Private, fail-closed personal memory engine connecting Obsidian to local AI agents*
-
-[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-F5A623?style=for-the-badge&logo=open-source-initiative&logoColor=white)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-454%20Passing-10B981?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/Heiron8/ai-second-brain-toolkit/actions)
-[![MCP](https://img.shields.io/badge/Protocol-MCP%202.3-8B5CF6?style=for-the-badge&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
-[![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local%20%26%20Zero%20PII-6366F1?style=for-the-badge)](SECURITY.md)
-[![Cost](https://img.shields.io/badge/Cost-%240%20%2F%20Free-059669?style=for-the-badge)]()
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F5A623?style=flat-square&logo=open-source-initiative&logoColor=white" alt="License: MIT" /></a>
+  <a href="https://github.com/Heiron8/ai-second-brain-toolkit/actions"><img src="https://img.shields.io/badge/Tests-454%20Passing-10B981?style=flat-square&logo=github-actions&logoColor=white" alt="Tests" /></a>
+  <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/Protocol-MCP%202.3-8B5CF6?style=flat-square&logo=anthropic&logoColor=white" alt="MCP" /></a>
+  <a href="SECURITY.md"><img src="https://img.shields.io/badge/Privacy-100%25%20Local-6366F1?style=flat-square" alt="Privacy" /></a>
+  <img src="https://img.shields.io/badge/Cost-%240%20%2F%20Free-059669?style=flat-square" alt="Cost" />
+</p>
 
 <p align="center">
   <b>Zero cloud subscriptions</b> • <b>Strict local stdio IPC</b> • <b>Single-source Markdown truth</b> • <b>No-clobber staging</b>
 </p>
 
-[⚡ Quickstart (30s)](#-quickstart-30-seconds) • [🏛️ Architecture](#️-architecture--data-flow) • [🤖 AI Client Setup](#-universal-ai-client-setup) • [🛡️ Security](SECURITY.md) • [🤝 Contributing](CONTRIBUTING.md)
+<p align="center">
+  <a href="#-quickstart-30-seconds">Quickstart</a> •
+  <a href="#-commands--capabilities">Commands</a> •
+  <a href="#️-architecture--data-flow">Architecture</a> •
+  <a href="#-universal-ai-client-setup">Client Setup</a> •
+  <a href="SECURITY.md">Security</a> •
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
 
 ---
-</div>
+
+## ⚡ Commands & Capabilities
+
+7 tools that map to the development and memory lifecycle. Each one activates the right safety skills automatically.
+
+| What you're doing | Command / Tool | Key principle |
+|---|---|---|
+| **Capture session outcomes** | `/brain-save` | Explicit current-context staging; zero silent background scraping |
+| **Stage candidate drafts** | `scripts/migrate.py` | Isolated staging outside Git and OneDrive |
+| **Verify cryptographic pins** | `SHA-256 Grant Guard` | Tamper-evident integrity; changed bytes refuse replay |
+| **Atomic vault publication** | `scripts/publish_memory.py` | Strict no-clobber; existing notes are never overwritten |
+| **Recall verified notes** | `/brain-recall` | Read-only lexical & semantic search; hash-cited Markdown excerpts |
+| **Maintain knowledge graph** | `scripts/wiki_memory.py` | Conservative wikilinks and cross-session claim deduplication |
+| **Audit local health** | `scripts/install_toolkit.py --check-only` | Fail-closed diagnostic report; zero cloud telemetry |
+
+---
 
 ## 🌟 Why AI Second Brain?
 
