@@ -1,16 +1,25 @@
+<div align="center">
+
+<img src="assets/banner.svg" alt="AI Second Brain Toolkit Banner" width="100%" />
+
 # 🧠 AI Second Brain Toolkit
+### *Private, fail-closed personal memory engine connecting Obsidian to local AI agents*
 
-> **Private, fail-closed memory engine connecting your Obsidian vault to local AI agents.**  
-> *Zero cloud subscriptions • Strict local stdio IPC • Single-source Markdown truth*
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F5A623?style=for-the-badge&logo=open-source-initiative&logoColor=white)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-454%20Passing-10B981?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/Heiron8/ai-second-brain-toolkit/actions)
+[![MCP](https://img.shields.io/badge/Protocol-MCP%202.3-8B5CF6?style=for-the-badge&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
+[![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local%20%26%20Zero%20PII-6366F1?style=for-the-badge)](SECURITY.md)
+[![Cost](https://img.shields.io/badge/Cost-%240%20%2F%20Free-059669?style=for-the-badge)]()
 
-[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-454%20Passing-brightgreen.svg)]()
-[![Privacy](https://img.shields.io/badge/Privacy-Fail--Closed%20%7C%20Zero%20PII-purple.svg)]()
-[![Cost](https://img.shields.io/badge/Cost-%240%20%2F%20Free-emerald.svg)]()
-[![Protocol](https://img.shields.io/badge/Protocol-Model%20Context%20Protocol%20(MCP)-orange.svg)](https://modelcontextprotocol.io/)
+<p align="center">
+  <b>Zero cloud subscriptions</b> • <b>Strict local stdio IPC</b> • <b>Single-source Markdown truth</b> • <b>No-clobber staging</b>
+</p>
+
+[⚡ Quickstart (30s)](#-quickstart-30-seconds) • [🏛️ Architecture](#️-architecture--data-flow) • [🤖 AI Client Setup](#-universal-ai-client-setup) • [🛡️ Security](SECURITY.md) • [🤝 Contributing](CONTRIBUTING.md)
 
 ---
+</div>
 
 ## 🌟 Why AI Second Brain?
 
