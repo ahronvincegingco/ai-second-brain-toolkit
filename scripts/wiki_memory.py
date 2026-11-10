@@ -124,7 +124,7 @@ def _check_no_reparse_or_escape(vault_root, relpath):
             st = ancestor.lstat()
             if (
                 ancestor.is_symlink()
-                or ancestor.is_junction()
+                or getattr(ancestor, 'is_junction', lambda: False)()
                 or getattr(st, 'st_reparse_tag', 0) & 0x20000000
             ):
                 raise WikiMemoryError('REDIRECTED_WIKI_PATH')

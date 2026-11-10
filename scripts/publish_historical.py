@@ -231,7 +231,7 @@ def _present(path):
     for part in (path, *path.parents):
         if os.path.lexists(part):
             st = part.lstat()
-            _require(not part.is_symlink() and not part.is_junction() and not getattr(st, 'st_reparse_tag', 0) & 0x20000000)
+            _require(not part.is_symlink() and not getattr(part, 'is_junction', lambda: False)() and not getattr(st, 'st_reparse_tag', 0) & 0x20000000)
     return os.path.lexists(path)
 
 

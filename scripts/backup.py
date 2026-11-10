@@ -17,7 +17,7 @@ def inventory(vault):
             st = p.lstat()
             tag = getattr(st, 'st_reparse_tag', 0)
             # No namespace-surrogate links; cloud placeholders may require hydration.
-            if p.is_symlink() or p.is_junction() or tag & 0x20000000:
+            if p.is_symlink() or getattr(p, 'is_junction', lambda: False)() or tag & 0x20000000:
                 raise ValueError('Unsupported linked vault entry')
         directories += [(Path(current) / name).relative_to(vault).as_posix() for name in dirs]
         for name in names:

@@ -29,7 +29,7 @@ def safe_directory(root, path):
         raise CaptureError('OUTPUT_OUTSIDE_PRIVATE_WORKSPACE')
     for part in [path, *path.parents]:
         if part.exists() or part.is_symlink():
-            if (part.is_symlink() or part.is_junction()
+            if (part.is_symlink() or getattr(part, 'is_junction', lambda: False)()
                     or getattr(part.lstat(), 'st_reparse_tag', 0) & 0x20000000):
                 raise CaptureError('REDIRECTED_OUTPUT')
     path.mkdir(parents=True, exist_ok=True)

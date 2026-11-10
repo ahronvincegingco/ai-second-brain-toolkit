@@ -165,7 +165,7 @@ def stage(root, project, value, environment=None):
     # Check existing namespace before creating a directory or lock.
     for part in (folder, *folder.parents):
         if part.exists():
-            require(not part.is_symlink() and not part.is_junction(), 'REDIRECTED_OUTPUT')
+            require(not part.is_symlink() and not getattr(part, 'is_junction', lambda: False)(), 'REDIRECTED_OUTPUT')
     receipt_path = folder / 'receipt.json'
     archive = root / 'archive' / (sha + '.brain-save-context.json')
     candidate_path = folder / 'candidate.json'
@@ -367,7 +367,7 @@ def stage_chat_memory(root, title, text=None, summary=None, tags=None, metadata=
 
     for part in (folder, *folder.parents):
         if part.exists():
-            require(not part.is_symlink() and not part.is_junction(), 'REDIRECTED_OUTPUT')
+            require(not part.is_symlink() and not getattr(part, 'is_junction', lambda: False)(), 'REDIRECTED_OUTPUT')
 
     receipt_path = folder / 'receipt.json'
     archive = root / 'archive' / (sha + '.brain-chat-context.json')

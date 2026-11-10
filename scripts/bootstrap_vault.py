@@ -31,7 +31,7 @@ def _check_path(path):
     for part in (path, *path.parents):
         if os.path.lexists(part):
             info = part.lstat()
-            if part.is_symlink() or part.is_junction() or getattr(info, 'st_reparse_tag', 0) & 0x20000000:
+            if part.is_symlink() or getattr(part, 'is_junction', lambda: False)() or getattr(info, 'st_reparse_tag', 0) & 0x20000000:
                 raise BootstrapRefused('REDIRECTED_PATH')
 
 

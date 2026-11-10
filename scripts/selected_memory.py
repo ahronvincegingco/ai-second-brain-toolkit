@@ -28,7 +28,7 @@ def checked_path(path, directory=False):
         raise ValueError('Absolute configured paths required')
     for part in [path, *path.parents]:
         st = part.lstat()
-        if part.is_symlink() or part.is_junction() or getattr(st, 'st_reparse_tag', 0) & 0x20000000:
+        if part.is_symlink() or getattr(part, 'is_junction', lambda: False)() or getattr(st, 'st_reparse_tag', 0) & 0x20000000:
             raise ValueError('Redirected paths refused')
     if directory:
         if not path.is_dir():

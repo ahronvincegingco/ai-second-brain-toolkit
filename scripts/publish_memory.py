@@ -34,7 +34,7 @@ def read_json(path, limit=128000):
 
 def prepare_parent(path):
     for part in (path, *path.parents):
-        require(not part.is_symlink() and not part.is_junction(), 'REDIRECTED_PUBLICATION_PATH')
+        require(not part.is_symlink() and not getattr(part, 'is_junction', lambda: False)(), 'REDIRECTED_PUBLICATION_PATH')
     path.parent.mkdir(parents=True, exist_ok=True)
     checked_path(path.parent, directory=True)
 

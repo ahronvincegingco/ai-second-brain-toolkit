@@ -84,7 +84,7 @@ def check_redirected_path(path: Path | str) -> None:
     for part in (target, *target.parents):
         if os.path.lexists(part):
             info = part.lstat()
-            if part.is_symlink() or part.is_junction() or (getattr(info, "st_reparse_tag", 0) & 0x20000000):
+            if part.is_symlink() or getattr(part, 'is_junction', lambda: False)() or (getattr(info, "st_reparse_tag", 0) & 0x20000000):
                 raise ValueError(f"Redirected path refused (symlink/junction/reparse): {part}")
 
 

@@ -41,7 +41,7 @@ def safe_id(value):
 def private_root(value):
     p = Path(value).absolute()
     for item in [p, *p.parents]:
-        if item.is_symlink() or item.is_junction():
+        if item.is_symlink() or getattr(item, 'is_junction', lambda: False)():
             raise ValueError('Linked output ancestors are refused')
     p = p.resolve()
     if any(x.lower().startswith('onedrive') or x.lower() == '.git' for x in p.parts):
@@ -57,7 +57,7 @@ def private_root(value):
 def write_new(path, data):
     """Idempotent exact replay; changed bytes never silently replace a record."""
     for ancestor in [path.absolute(), *path.absolute().parents]:
-        if ancestor.is_symlink() or ancestor.is_junction():
+        if ancestor.is_symlink() or getattr(ancestor, 'is_junction', lambda: False)():
             raise ValueError('Linked output path refused')
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
@@ -220,7 +220,7 @@ def render(note, workspace, relative):
     vault = root / 'test-vault'
     target = vault / rel
     for part in [target, *target.parents]:
-        if part.is_symlink() or part.is_junction():
+        if part.is_symlink() or getattr(part, 'is_junction', lambda: False)():
             raise ValueError('Linked draft target refused')
         if part == root:
             break
@@ -244,14 +244,14 @@ def build_index(workspace, notes):
     entries = []
     for relative in notes:
         path = root / 'test-vault' / relative
-        if not path.resolve().is_relative_to((root / 'test-vault').resolve()) or path.is_symlink() or path.is_junction():
+        if not path.resolve().is_relative_to((root / 'test-vault').resolve()) or path.is_symlink() or getattr(path, 'is_junction', lambda: False)():
             raise ValueError('Index source outside disposable vault')
         body = path.read_text(encoding='utf-8')
         if 'review_state: "candidate"' not in body or 'privacy: "restricted"' in body:
             raise ValueError('Only selected nonrestricted demonstration candidates allowed')
         entries.append((relative, digest(path.read_bytes()), body))
     out = root / 'indexes'
-    if out.is_symlink() or out.is_junction() or (out / 'demo.sqlite').is_symlink():
+    if out.is_symlink() or getattr(out, 'is_junction', lambda: False)() or (out / 'demo.sqlite').is_symlink():
         raise ValueError('Linked index output refused')
     out.mkdir(exist_ok=True)
     with closing(sqlite3.connect(out / 'demo.sqlite')) as db, db:
