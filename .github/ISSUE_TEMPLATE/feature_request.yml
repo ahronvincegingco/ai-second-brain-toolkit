@@ -1,0 +1,62 @@
+name: Feature or Integration Request
+description: Propose a new capability, architectural improvement, or AI coding agent integration.
+title: "[feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing an enhancement to the **AI Second Brain Toolkit**!
+        Before proposing, please ensure the idea aligns with our foundational tenets: **$0 cost**, **100% local stdio IPC**, and **fail-closed privacy**.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Enhancement Category
+      description: What kind of proposal is this?
+      options:
+        - "New AI Coding Agent Integration (MCP client)"
+        - "Recall & Context Primer Improvement"
+        - "Vault Sanitization & Graphify Indexing"
+        - "Developer CLI / Setup Tooling"
+        - "Documentation & Architecture ADR"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem, friction, or limitation does this feature solve?
+      placeholder: "e.g. Currently, agent X cannot connect to the second brain because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed approach and how it preserves local, fail-closed privacy.
+      placeholder: "Describe the approach, interface changes, or configuration shapes..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative workarounds or designs?
+      placeholder: "Describe any other approaches you investigated..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: tenets-confirm
+    attributes:
+      label: Core Tenets Alignment
+      options:
+        - label: This proposal requires zero mandatory paid cloud services, external databases, or third-party webhooks.
+          required: true
+        - label: This proposal preserves local stdio IPC and cryptographic SHA-256 grant authorization.
+          required: true

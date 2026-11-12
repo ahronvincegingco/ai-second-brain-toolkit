@@ -1,0 +1,94 @@
+name: Bug Report
+description: Report an error, unexpected failure, or broken functionality in the toolkit.
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue!
+        ⚠️ **PRIVACY WARNING:** Never paste real personal vault notes, private user paths (`C:\Users\<username>`), or active cryptographic grant secrets (`.ai-second-brain-private/`). Use synthetic placeholders.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the toolkit is having problems?
+      options:
+        - "scripts/managed_memory_mcp.py (Managed Memory MCP stdio)"
+        - "scripts/chat_recall_http.py (Local HTTP Recall Bridge)"
+        - "scripts/managed_memory.py (Grant & Memory Engine)"
+        - "scripts/selected_memory.py (Sanitization & Indexing)"
+        - "skills/brain-recall (Context Primer Recall Skill)"
+        - "skills/brain-save (Staging & Save Skill)"
+        - "install.ps1 / install_toolkit.py (Diagnostics & Setup)"
+        - "Documentation / Examples"
+        - "Other / Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: AI Client / Environment
+      description: Which AI agent interface or IDE were you using?
+      options:
+        - "Google Antigravity (CLI / IDE)"
+        - "VS Code GitHub Copilot Chat"
+        - "OpenCode"
+        - "Claude Desktop"
+        - "Codex / OpenAI"
+        - "ChatGPT Desktop"
+        - "Terminal / CLI only"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Info
+      description: OS version and Python version (e.g. Windows 11, Python 3.13.2)
+      placeholder: "e.g. Windows 11 Pro 23H2, Python 3.13.0 CPython"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Clear, reproducible sequence of commands or prompts.
+      placeholder: |
+        1. Run `python scripts/...`
+        2. Call `/brain-recall ...`
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What Happened & Error Traceback
+      description: What went wrong? Paste terminal logs or tracebacks here.
+      placeholder: "Paste traceback or error message here (sanitize any personal paths)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+      placeholder: "e.g. Managed recall should authenticate grant and return matches"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy-confirm
+    attributes:
+      label: Privacy & Safety Confirmation
+      options:
+        - label: I confirm that I have NOT included private vault contents, real credentials, or active grant tokens in this issue.
+          required: true
+        - label: I verified that the issue is reproducible with the latest `main` branch.
+          required: false

@@ -57,7 +57,7 @@ Every contribution must honor these three foundational tenets:
    - Every bug fix or new feature must include a corresponding unit test in `tests/`.
    - Tests must run offline without internet connectivity.
 4. **Verify Quality Before Submitting:**
-   - Ensure all 454+ unit tests pass.
+   - Ensure all 458+ unit tests pass.
    - Run `.\scripts\install.ps1 --check-only` to ensure no diagnostic regressions.
 5. **Write Clear Commit Messages:**
    - Use imperative, conventional commit messages:  

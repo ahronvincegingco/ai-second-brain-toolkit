@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Report a Security Vulnerability
+    url: https://github.com/ahronvincegingco/ai-second-brain-toolkit/security/advisories/new
+    about: Please report security vulnerabilities or privacy concerns privately through GitHub Security Advisories.
+  - name: 💬 Questions & Community Discussion
+    url: https://github.com/ahronvincegingco/ai-second-brain-toolkit/discussions
+    about: For general questions or workflow discussions, visit GitHub Discussions.
