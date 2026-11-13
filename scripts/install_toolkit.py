@@ -1,8 +1,8 @@
 """Single-command toolkit installer, environment validator, and self-diagnostics.
 
 Deterministic local setup and portability validator for AI Second Brain:
-- Enforces Python version check (>= 3.11).
-- Discovers or validates the OneDrive Obsidian vault path.
+- Enforces the pinned Python 3.11–3.13 support matrix.
+- Validates explicitly configured macOS vaults; retains Windows OneDrive discovery.
 - Checks MCP runtime dependencies against pinned requirements-mcp.lock.
 - Initializes private workspace directory structures and default templates
   without overwriting existing credentials or user files (strict no-clobber).
@@ -34,6 +34,7 @@ import sys
 import zipfile
 
 MIN_PYTHON_VERSION = (3, 11)
+MAX_PYTHON_VERSION = (3, 13)
 DEFAULT_PRIVATE_DIRNAME = ".ai-second-brain-private"
 
 CORE_DEPENDENCIES = (
@@ -70,11 +71,11 @@ def get_repo_root() -> Path:
 
 
 def check_python_version(version_info: tuple[int, ...] | None = None) -> tuple[bool, str]:
-    """Check that Python runtime version is at least 3.11."""
+    """Check the supported, dependency-pinned Python minor-version range."""
     if version_info is None:
         version_info = sys.version_info[:3]
     version_str = ".".join(str(part) for part in version_info)
-    is_supported = version_info[:2] >= MIN_PYTHON_VERSION
+    is_supported = MIN_PYTHON_VERSION <= version_info[:2] <= MAX_PYTHON_VERSION
     return is_supported, version_str
 
 
@@ -86,6 +87,28 @@ def check_redirected_path(path: Path | str) -> None:
             info = part.lstat()
             if part.is_symlink() or getattr(part, 'is_junction', lambda: False)() or (getattr(info, "st_reparse_tag", 0) & 0x20000000):
                 raise ValueError(f"Redirected path refused (symlink/junction/reparse): {part}")
+
+
+def configured_path(value: str | Path) -> Path:
+    """Check the lexical path before resolution can erase a redirect."""
+    path = Path(value).expanduser().absolute()
+    check_redirected_path(path)
+    return path.resolve()
+
+
+def create_template(path: Path, data: bytes) -> bool:
+    """Use the shared flushed, same-filesystem no-clobber primitive."""
+    check_redirected_path(path)
+    if path.exists():
+        if not path.is_file() or path.stat().st_nlink != 1:
+            raise ValueError(f"Expected non-hardlinked regular template: {path}")
+        return False
+    from publish_memory import write_immutable
+    if not write_immutable(path, data):
+        raise FileExistsError(f"Template created by another writer: {path}")
+    if os.name == 'posix':
+        path.chmod(0o600)
+    return True
 
 
 def is_onedrive_path(path: Path | str) -> bool:
@@ -124,7 +147,7 @@ def discover_onedrive_vault(explicit_path: str | Path | None = None) -> dict:
     }
 
     if explicit_path:
-        target = Path(explicit_path).expanduser().resolve()
+        target = Path(explicit_path).expanduser().absolute()
         result["path"] = str(target)
         try:
             check_redirected_path(target)
@@ -145,19 +168,14 @@ def discover_onedrive_vault(explicit_path: str | Path | None = None) -> dict:
     for env_name in ("SECOND_BRAIN_VAULT", "OBSIDIAN_VAULT", "OBSIDIAN_VAULT_ROOT"):
         val = os.environ.get(env_name)
         if val:
-            candidate = Path(val).expanduser().resolve()
-            if candidate.is_dir():
-                try:
-                    check_redirected_path(candidate)
-                    result["path"] = str(candidate)
-                    result["exists"] = True
-                    result["is_dir"] = True
-                    result["in_onedrive"] = is_onedrive_path(candidate)
-                    result["has_obsidian_marker"] = (candidate / ".obsidian").is_dir()
-                    result["discovered"] = True
-                    return result
-                except ValueError:
-                    pass
+            configured = discover_onedrive_vault(val)
+            configured["discovered"] = True
+            return configured  # Invalid explicit configuration never falls back to another vault.
+
+    # macOS uses explicit CLI/environment configuration. Never inspect personal
+    # Documents, Obsidian's registry, iCloud, or CloudStorage to discover a vault.
+    if sys.platform == 'darwin':
+        return result
 
     # 2. Search known OneDrive locations
     candidate_roots: list[Path] = []
@@ -165,7 +183,7 @@ def discover_onedrive_vault(explicit_path: str | Path | None = None) -> dict:
         val = os.environ.get(env_name)
         if val:
             try:
-                p = Path(val).expanduser().resolve()
+                p = configured_path(val)
                 if p.is_dir() and p not in candidate_roots:
                     candidate_roots.append(p)
             except Exception:
@@ -185,7 +203,7 @@ def discover_onedrive_vault(explicit_path: str | Path | None = None) -> dict:
 
     for root in candidate_roots:
         for sub in VAULT_CANDIDATE_SUBDIRS:
-            candidate = (root / sub).resolve()
+            candidate = root / sub
             if candidate.is_dir():
                 try:
                     check_redirected_path(candidate)
@@ -241,9 +259,9 @@ def check_dependencies(lockfile_path: Path | str | None = None) -> dict:
 
     lockfile_exists = lockfile.is_file()
     cmd_guide = (
-        f"{sys.executable} -m pip install --require-hashes -r {lockfile}"
+        f'"{sys.executable}" -m pip install --require-hashes --only-binary=:all: -r "{lockfile}"'
         if lockfile_exists
-        else "pip install mcp pydantic anyio uvicorn starlette jsonschema"
+        else "Restore requirements-mcp.lock before installing dependencies"
     )
 
     return {
@@ -268,15 +286,14 @@ def install_dependencies(lockfile_path: Path | str | None = None, python_exe: st
         raise FileNotFoundError(f"Lockfile not found at {lockfile}")
 
     exe = python_exe or sys.executable
-    cmd = [exe, "-m", "pip", "install", "--require-hashes", "-r", str(lockfile)]
+    cmd = [exe, "-m", "pip", "install", "--require-hashes", "--only-binary=:all:", "-r", str(lockfile)]
     res = subprocess.run(cmd, capture_output=True, text=True)
     return res.returncode == 0
 
 
 def validate_private_path_safety(private_path: Path) -> None:
     """Ensure private workspace path is strictly outside git, outside OneDrive, and redirect-free."""
-    p = private_path.resolve()
-    check_redirected_path(p)
+    p = configured_path(private_path)
 
     # Must be outside OneDrive
     if is_onedrive_path(p):
@@ -297,11 +314,11 @@ def init_private_workspace(
     if private_path is None:
         env_priv = os.environ.get("SECOND_BRAIN_PRIVATE")
         if env_priv:
-            target_private = Path(env_priv).expanduser().resolve()
+            target_private = configured_path(env_priv)
         else:
-            target_private = (Path.home() / DEFAULT_PRIVATE_DIRNAME).resolve()
+            target_private = configured_path(Path.home() / DEFAULT_PRIVATE_DIRNAME)
     else:
-        target_private = Path(private_path).expanduser().resolve()
+        target_private = configured_path(private_path)
 
     validate_private_path_safety(target_private)
 
@@ -323,11 +340,12 @@ def init_private_workspace(
     }
 
     if not dry_run:
-        target_private.mkdir(parents=True, exist_ok=True)
+        target_private.mkdir(parents=True, exist_ok=True, mode=0o700)
         for s in subdirs:
             subdir_path = target_private / s
+            check_redirected_path(subdir_path)
             if not subdir_path.exists():
-                subdir_path.mkdir(parents=True, exist_ok=True)
+                subdir_path.mkdir(parents=True, exist_ok=True, mode=0o700)
                 report["created_dirs"].append(str(subdir_path))
     else:
         for s in subdirs:
@@ -337,6 +355,7 @@ def init_private_workspace(
 
     # 1. .private-staging.json
     staging_marker = target_private / ".private-staging.json"
+    check_redirected_path(staging_marker)
     if staging_marker.exists():
         report["preserved_files"].append(str(staging_marker))
     else:
@@ -346,11 +365,12 @@ def init_private_workspace(
             "external_exports": False,
         }
         if not dry_run:
-            staging_marker.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
+            create_template(staging_marker, (json.dumps(content, indent=2) + "\n").encode('utf-8'))
         report["created_files"].append(str(staging_marker))
 
     # 2. config.json (inert local settings template)
     config_file = target_private / "config.json"
+    check_redirected_path(config_file)
     if config_file.exists():
         report["preserved_files"].append(str(config_file))
     else:
@@ -364,11 +384,12 @@ def init_private_workspace(
             "agent_input": "explicitly selected context packet only",
         }
         if not dry_run:
-            config_file.write_text(json.dumps(config_content, indent=2) + "\n", encoding="utf-8")
+            create_template(config_file, (json.dumps(config_content, indent=2) + "\n").encode('utf-8'))
         report["created_files"].append(str(config_file))
 
     # 3. brain-publication-policy.json (inert disabled publication policy)
     policy_file = target_private / "brain-publication-policy.json"
+    check_redirected_path(policy_file)
     if policy_file.exists():
         report["preserved_files"].append(str(policy_file))
     else:
@@ -396,7 +417,7 @@ def init_private_workspace(
             policy_data["vault_root"] = str(vault_path)
         policy_data["enabled"] = False
         if not dry_run:
-            policy_file.write_text(json.dumps(policy_data, indent=2) + "\n", encoding="utf-8")
+            create_template(policy_file, (json.dumps(policy_data, indent=2) + "\n").encode('utf-8'))
         report["created_files"].append(str(policy_file))
 
     return report
@@ -408,7 +429,7 @@ def init_vault_templates(
     dry_run: bool = False,
 ) -> dict:
     """Bootstrap default templates into the vault if missing, never overwriting existing files."""
-    vault = Path(vault_path).expanduser().resolve()
+    vault = configured_path(vault_path)
     if not vault.is_dir():
         raise ValueError(f"Vault directory does not exist or is not a directory: {vault}")
 
@@ -429,6 +450,7 @@ def init_vault_templates(
     for rel_path in VAULT_BOOTSTRAP_TEMPLATES:
         src_file = src_dir / rel_path
         dst_file = vault / rel_path
+        check_redirected_path(dst_file)
         if not src_file.is_file():
             continue
 
@@ -438,7 +460,7 @@ def init_vault_templates(
             report["created_files"].append(str(dst_file))
             if not dry_run:
                 dst_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src_file, dst_file)
+                create_template(dst_file, src_file.read_bytes())
 
     return report
 
@@ -452,8 +474,8 @@ def migrate_private_bundle(
 
     Adheres strictly to no-clobber and path-traversal safety.
     """
-    bundle = Path(bundle_path).expanduser().resolve()
-    dest = Path(private_dest).expanduser().resolve()
+    bundle = configured_path(bundle_path)
+    dest = configured_path(private_dest)
     validate_private_path_safety(dest)
 
     if not bundle.exists():
@@ -489,7 +511,7 @@ def migrate_private_bundle(
                     report["errors"].append(f"Skipped reserved device path: {name}")
                     continue
 
-                out_path = (dest / name).resolve()
+                out_path = configured_path(dest.joinpath(*parts))
                 if not out_path.is_relative_to(dest_resolved):
                     report["errors"].append(f"Skipped path escaping destination: {name}")
                     continue
@@ -504,7 +526,7 @@ def migrate_private_bundle(
                     report["restored_files"].append(str(out_path))
                     if not dry_run:
                         out_path.parent.mkdir(parents=True, exist_ok=True)
-                        with zf.open(item) as src, open(out_path, "wb") as dst:
+                        with zf.open(item) as src, open(out_path, "xb") as dst:
                             shutil.copyfileobj(src, dst)
     elif bundle.is_dir():
         for root, dirs, files in os.walk(bundle, followlinks=False):
@@ -522,7 +544,7 @@ def migrate_private_bundle(
                 if device_pattern.fullmatch(f.strip()):
                     report["errors"].append(f"Skipped reserved device file: {src_file}")
                     continue
-                out_path = (dest / rel_root / f).resolve()
+                out_path = configured_path(dest / rel_root / f)
                 if not out_path.is_relative_to(dest_resolved):
                     report["errors"].append(f"Skipped path escaping destination: {src_file}")
                     continue
@@ -532,7 +554,8 @@ def migrate_private_bundle(
                     report["restored_files"].append(str(out_path))
                     if not dry_run:
                         out_path.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(src_file, out_path)
+                        with src_file.open('rb') as src, out_path.open('xb') as dst:
+                            shutil.copyfileobj(src, dst)
     else:
         raise ValueError(f"Unsupported migration bundle format: {bundle}")
 
@@ -563,9 +586,9 @@ def run_diagnostics(
 
     if private_path is None:
         env_priv = os.environ.get("SECOND_BRAIN_PRIVATE")
-        priv_target = Path(env_priv).resolve() if env_priv else (Path.home() / DEFAULT_PRIVATE_DIRNAME).resolve()
+        priv_target = Path(env_priv).expanduser().absolute() if env_priv else (Path.home() / DEFAULT_PRIVATE_DIRNAME).absolute()
     else:
-        priv_target = Path(private_path).resolve()
+        priv_target = Path(private_path).expanduser().absolute()
 
     priv_info["path"] = str(priv_target)
     priv_info["exists"] = priv_target.is_dir()
@@ -581,7 +604,7 @@ def run_diagnostics(
             priv_info["redirect_free"] = False
 
     marker = priv_target / ".private-staging.json"
-    if marker.is_file():
+    if priv_info['redirect_free'] and marker.is_file() and not marker.is_symlink():
         try:
             data = json.loads(marker.read_text(encoding="utf-8"))
             if data.get("live_writes") is False and data.get("external_exports") is False:
@@ -623,6 +646,8 @@ def run_diagnostics(
         and priv_info["outside_git"]
         and priv_info["outside_onedrive"]
         and priv_info["redirect_free"]
+        and vault_info["redirect_free"]
+        and (not (vault_path or vault_info['discovered']) or vault_info["is_dir"])
     )
 
     return {
@@ -761,7 +786,7 @@ def main(argv: list[str] | None = None) -> int:
     # 1. Python version check
     py_ok, py_ver = check_python_version()
     if not py_ok:
-        err_msg = f"Python {MIN_PYTHON_VERSION[0]}.{MIN_PYTHON_VERSION[1]}+ required. Current: {py_ver}"
+        err_msg = f"Python 3.11–3.13 required. Current: {py_ver}"
         if args.json:
             print(json.dumps({"error": "PYTHON_VERSION_INCOMPATIBLE", "message": err_msg}))
         else:
@@ -786,7 +811,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.install_deps and not (args.dry_run or args.check_only):
         deps = check_dependencies()
         if not deps["all_present"]:
-            if not args.quiet:
+            if not (args.quiet or args.json):
                 print("Installing missing dependencies from requirements-mcp.lock...")
             try:
                 success = install_dependencies()
@@ -817,10 +842,12 @@ def main(argv: list[str] | None = None) -> int:
                 actions_taken["vault_templates"] = vt_res
             except Exception as e:
                 actions_taken["vault_templates_error"] = str(e)
+        else:
+            actions_taken["vault_templates_error"] = 'Explicit existing vault required'
 
     # 6. Migration bundle restoration
     if args.migrate_bundle and not args.check_only:
-        dest = args.private_dir or (Path.home() / DEFAULT_PRIVATE_DIRNAME)
+        dest = args.private_dir or os.environ.get('SECOND_BRAIN_PRIVATE') or (Path.home() / DEFAULT_PRIVATE_DIRNAME)
         try:
             mb_res = migrate_private_bundle(
                 bundle_path=args.migrate_bundle,
@@ -834,6 +861,10 @@ def main(argv: list[str] | None = None) -> int:
     # 7. Run diagnostics
     diag = run_diagnostics(vault_path=effective_vault, private_path=args.private_dir)
     diag["actions_taken"] = actions_taken
+    if any(key.endswith('_error') for key in actions_taken) or (args.install_deps and not diag['dependencies']['all_present']):
+        diag['overall_healthy'] = False
+    if actions_taken['migration_bundle'] and actions_taken['migration_bundle']['errors']:
+        diag['overall_healthy'] = False
 
     if args.json:
         print(json.dumps(diag, indent=2))

@@ -20,7 +20,7 @@ Memory enables AI agents to remember your architecture decisions, project milest
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F5A623?style=flat-square&logo=open-source-initiative&logoColor=white" alt="License: MIT" /></a>
-  <a href="https://github.com/ahronvincegingco/ai-second-brain-toolkit/actions"><img src="https://img.shields.io/badge/Tests-458%20Passing-10B981?style=flat-square&logo=github-actions&logoColor=white" alt="Tests" /></a>
+  <a href="https://github.com/ahronvincegingco/ai-second-brain-toolkit/actions"><img src="https://github.com/ahronvincegingco/ai-second-brain-toolkit/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/Protocol-MCP%202.3-8B5CF6?style=flat-square&logo=anthropic&logoColor=white" alt="MCP" /></a>
   <a href="SECURITY.md"><img src="https://img.shields.io/badge/Privacy-100%25%20Local-6366F1?style=flat-square" alt="Privacy" /></a>
   <img src="https://img.shields.io/badge/Cost-%240%20%2F%20Free-059669?style=flat-square" alt="Cost" />
@@ -52,10 +52,10 @@ Memory enables AI agents to remember your architecture decisions, project milest
 
 ### Requirements & Supported Matrix
 
-- **Operating System:** Windows 10 / 11
-- **Supported Python:** CPython 3.11, 3.12, and 3.13 (Python 3.14+ is unreleased/unpinned; see lockfile wheel hash guards)
+- **Operating System:** Windows 10 / 11 and macOS (Apple Silicon); see [macOS setup and verification limits](docs/macos-installation.md).
+- **Supported Python:** CPython 3.11, 3.12, and 3.13 (Python 3.14+ is outside the pinned support matrix).
 - **Dependencies:** Standard library for core read/save workflows; full HTTP bridge dependencies are pinned in `requirements-mcp.lock` (`mcp`, `pydantic`, `anyio`, `uvicorn`, `starlette`, `jsonschema`).
-- **Test Suite:** 457 passing tests run on every push across Python 3.11, 3.12, and 3.13 in [GitHub Actions CI](https://github.com/ahronvincegingco/ai-second-brain-toolkit/actions).
+- **Test Suite:** Synthetic regression tests; Windows and macOS jobs are configured for Python 3.11, 3.12, and 3.13 in [GitHub Actions CI](https://github.com/ahronvincegingco/ai-second-brain-toolkit/actions). Check the actual run for results and platform-specific skips.
 
 **Fastest path — clone and install in 30 seconds:**
 
@@ -68,7 +68,15 @@ cd ai-second-brain-toolkit
 .\scripts\install.ps1
 ```
 
-The installer auto-discovers your Obsidian vault, initializes your private staging workspace outside Git, validates your dependencies, and runs self-diagnostics.
+On Windows the installer supports bounded OneDrive vault discovery. On macOS use
+an explicit vault path; the installer does not scan personal folders. Both initialize
+disabled private staging templates outside Git and run diagnostics. Dependency
+installation requires `--install-deps` or the explicit hash-verified pip command.
+
+**macOS:** activate a Python 3.11–3.13 virtual environment, then run
+`sh scripts/install.sh --vault "/absolute/path/to/test-vault" --private-dir "/absolute/path/to/private"`.
+Follow the [complete macOS setup](docs/macos-installation.md) for isolated synthetic
+testing, MCP/Codex configuration and troubleshooting.
 
 > **Privacy guarantee:** All personal transcripts, cryptographic grants, and private notes live outside this repository (in `.ai-second-brain-private/`). Your personal data is never committed to Git.
 
@@ -134,7 +142,7 @@ Add to your `.gemini/antigravity-cli/mcp/second_brain.json`:
 Add to `.codex/config.toml`:
 
 ```toml
-[mcp.servers.second_brain]
+[mcp_servers.second_brain]
 command = "python"
 args = ["-B", "C:\\path\\to\\AI-Second-Brain-Tools\\scripts\\managed_memory_mcp.py"]
 env = { SECOND_BRAIN_MANAGED_GRANT = "C:\\path\\to\\.ai-second-brain-private\\grants\\managed-grant.json", SECOND_BRAIN_MANAGED_GRANT_SHA256 = "<YOUR_GRANT_SHA256>", SECOND_BRAIN_MANAGED_CLIENT = "codex-openai" }

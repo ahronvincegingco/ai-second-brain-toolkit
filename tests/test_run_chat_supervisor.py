@@ -25,8 +25,11 @@ class SupervisorTests(unittest.TestCase):
         self.files={}
         for name in ('launcher','profile','checker'):
             path=self.root/name; path.write_bytes(json.dumps({'intent_path':str(self.root/'intent.json'),'lifetime_seconds':60}).encode() if name=='profile' else name.encode()); self.files[name]=path
-        self.cfg={'root':str(self.root),'interpreter':sys.executable,
-                  'interpreter_sha256':hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest(),
+        # POSIX venv executables are normally symlinks. Pin the physical fixture
+        # interpreter so the production supervisor's redirect guard stays intact.
+        interpreter=Path(sys.executable).resolve()
+        self.cfg={'root':str(self.root),'interpreter':str(interpreter),
+                  'interpreter_sha256':hashlib.sha256(interpreter.read_bytes()).hexdigest(),
                   'ready_timeout':1,'lifetime_timeout':1}
         for name,path in self.files.items(): self.cfg[name]=str(path); self.cfg[name+'_sha256']=hashlib.sha256(path.read_bytes()).hexdigest()
     def start(self,child,content=None):
