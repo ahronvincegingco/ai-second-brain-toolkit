@@ -102,7 +102,7 @@ class InstallerTests(unittest.TestCase):
         vault_candidate.mkdir()
         (vault_candidate / ".obsidian").mkdir()
 
-        with patch.dict(os.environ, {"ONEDRIVE": str(od_dir)}):
+        with patch.dict(os.environ, {"ONEDRIVE": str(od_dir)}), patch('sys.platform', 'win32'):
             res = installer.discover_onedrive_vault()
             self.assertEqual(res["path"], str(vault_candidate))
             self.assertTrue(res["exists"])

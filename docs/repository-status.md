@@ -1,5 +1,11 @@
 # Components and readiness
 
+macOS contribution: `scripts/install.sh` delegates to the shared Python installer;
+MCP and optional Graphify locks retain existing versions with portable wheel hashes
+and a Windows-only `pywin32` marker. CI is configured for Windows/macOS and Python
+3.11–3.13. See [setup and verification limits](macos-installation.md). This source
+change does not activate any historical live installation or personal-data grant.
+
 The current uncommitted source includes create-only publication and managed recall,
 alongside private export intake and wiki templates. It does not enable a model or
 automatically publish canonical memories. A separately approved local create-only
