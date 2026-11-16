@@ -1,5 +1,14 @@
 # Client and OneDrive prerequisites
 
+## macOS source support
+
+The cross-platform installer, dependency locks and synthetic tests now have a
+[macOS setup guide](macos-installation.md), including absolute venv/server paths,
+synthetic grants and the current Codex `mcp_servers` configuration. The dated
+Windows results below remain historical evidence; they do not establish macOS
+client success or authorize reuse of any personal grant. OneDrive is optional for
+an explicitly configured vault. No personal directory scan occurs on macOS.
+
 ## Current local result: 2026-11-04
 
 Historical follow-up: the owner approved exact-five canonical publication and

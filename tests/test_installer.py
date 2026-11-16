@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import sys
 import tempfile
 import unittest
@@ -102,7 +103,7 @@ class InstallerTests(unittest.TestCase):
         vault_candidate.mkdir()
         (vault_candidate / ".obsidian").mkdir()
 
-        with patch.dict(os.environ, {"ONEDRIVE": str(od_dir)}):
+        with patch.dict(os.environ, {"ONEDRIVE": str(od_dir)}), patch('sys.platform', 'win32'):
             res = installer.discover_onedrive_vault()
             self.assertEqual(res["path"], str(vault_candidate))
             self.assertTrue(res["exists"])
@@ -229,6 +230,96 @@ class InstallerTests(unittest.TestCase):
         # No-clobber check on second run
         res2 = installer.migrate_private_bundle(bundle_zip, dest, dry_run=False)
         self.assertIn(str(dest / "receipts" / "receipt-1.json"), res2["preserved_files"])
+
+    def test_directory_bundle_preserves_private_permissions_and_existing_workspace(self):
+        """A 0600 source stays private in an existing 0755 workspace under umask 022."""
+        bundle = self.root / "bundle"
+        bundle.mkdir()
+        source = bundle / "private.txt"
+        content = b"synthetic private restoration fixture\n"
+        source.write_bytes(content)
+        source.chmod(0o600)
+        self.private.chmod(0o755)
+        restored = self.private / source.name
+
+        previous_umask = os.umask(0o022)
+        try:
+            report = installer.migrate_private_bundle(bundle, self.private)
+            self.assertEqual(report["errors"], [])
+            self.assertIn(str(restored), report["restored_files"])
+            self.assertEqual(restored.read_bytes(), content)
+            if os.name == "posix":
+                self.assertEqual(stat.S_IMODE(restored.stat().st_mode), 0o600)
+
+            source.write_bytes(b"synthetic replacement must not overwrite restored content")
+            report = installer.migrate_private_bundle(bundle, self.private)
+            self.assertEqual(report["restored_files"], [])
+            self.assertIn(str(restored), report["preserved_files"])
+            self.assertEqual(restored.read_bytes(), content)
+            if os.name == "posix":
+                self.assertEqual(stat.S_IMODE(restored.stat().st_mode), 0o600)
+                self.assertEqual(stat.S_IMODE(self.private.stat().st_mode), 0o755)
+        finally:
+            os.umask(previous_umask)
+
+    @unittest.skipUnless(os.name == "posix", "POSIX file permission semantics")
+    def test_directory_bundle_is_private_during_copy_and_restores_source_modes(self):
+        bundle = self.root / "bundle"
+        bundle.mkdir()
+        copyfileobj = shutil.copyfileobj
+
+        def check_private_copy(src, dst):
+            self.assertEqual(stat.S_IMODE(os.fstat(dst.fileno()).st_mode), 0o600)
+            copyfileobj(src, dst)
+            dst.flush()
+            self.assertEqual(stat.S_IMODE(os.fstat(dst.fileno()).st_mode), 0o600)
+
+        previous_umask = os.umask(0)
+        try:
+            for mode in (0o400, 0o640, 0o750):
+                with self.subTest(mode=oct(mode)):
+                    source = bundle / f"mode-{mode:o}.txt"
+                    source.write_bytes(b"synthetic source mode fixture\n")
+                    source.chmod(mode)
+                    with patch("install_toolkit.shutil.copyfileobj", side_effect=check_private_copy):
+                        installer.migrate_private_bundle(bundle, self.private)
+                    restored = self.private / source.name
+                    self.assertEqual(restored.read_bytes(), source.read_bytes())
+                    self.assertEqual(stat.S_IMODE(restored.stat().st_mode), mode)
+        finally:
+            os.umask(previous_umask)
+
+    def test_directory_bundle_exclusive_creation_refuses_racing_file(self):
+        bundle = self.root / "bundle"
+        bundle.mkdir()
+        source = bundle / "private.txt"
+        source.write_bytes(b"synthetic bundle content")
+        restored = self.private / source.name
+        original_open = os.open
+
+        def competing_writer(path, flags, mode=0o777, **kwargs):
+            if Path(path) == restored:
+                restored.write_bytes(b"synthetic competing writer")
+            return original_open(path, flags, mode, **kwargs)
+
+        with patch("install_toolkit.os.open", side_effect=competing_writer):
+            with self.assertRaises(FileExistsError):
+                installer.migrate_private_bundle(bundle, self.private)
+        self.assertEqual(restored.read_bytes(), b"synthetic competing writer")
+
+    @unittest.skipUnless(os.name == "posix", "POSIX descriptor permissions")
+    def test_directory_bundle_permission_failure_is_private_and_propagates(self):
+        bundle = self.root / "bundle"
+        bundle.mkdir()
+        source = bundle / "private.txt"
+        source.write_bytes(b"synthetic permission failure fixture")
+        restored = self.private / source.name
+
+        with patch("install_toolkit.os.fchmod", side_effect=OSError("synthetic chmod failure")):
+            with self.assertRaisesRegex(OSError, "synthetic chmod failure"):
+                installer.migrate_private_bundle(bundle, self.private)
+        self.assertEqual(stat.S_IMODE(restored.stat().st_mode), 0o600)
+        self.assertEqual(restored.read_bytes(), source.read_bytes())
 
     def test_run_diagnostics(self):
         """Test diagnostic structure and health evaluation."""

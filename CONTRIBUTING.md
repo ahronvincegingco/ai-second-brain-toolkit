@@ -33,12 +33,16 @@ Every contribution must honor these three foundational tenets:
    .\scripts\install.ps1 --check-only
 
    # Linux / macOS:
-   python scripts/install_toolkit.py --check-only
+   sh scripts/install.sh --check-only
    ```
 4. **Run the Test Suite:**
    ```bash
    python -m unittest discover -s tests -v
    ```
+   On macOS first set a physical temporary directory as described in
+   [macOS installation](docs/macos-installation.md). Install the full test runtime
+   using `python -m pip install --require-hashes --only-binary=:all: -r requirements-mcp.lock`.
+   CI exercises Windows and macOS on Python 3.11–3.13; report actual results separately.
 
 ---
 
