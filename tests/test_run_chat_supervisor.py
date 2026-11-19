@@ -53,15 +53,19 @@ class SupervisorTests(unittest.TestCase):
         adapter=data.base/'supervisor-test-adapter'; adapter.mkdir()
         helper_code = 'import time;print("https://fake.trycloudflare.com",flush=True);time.sleep(20)'
         (adapter/'sitecustomize.py').write_text(
-            'import subprocess,sys,uvicorn,mcp.server.mcpserver\n'
-            '_real=subprocess.Popen\n'
-            'def fake(argv,*args,**kwargs):\n'
-            f'    if not isinstance(argv,list) or not argv or argv[0] != {profile["helper"]["path"]!r}: return _real(argv,*args,**kwargs)\n'
-            f'    return _real([sys.executable,"-u","-c",{helper_code!r}],**kwargs)\n'
-            'subprocess.Popen=fake\n',encoding='utf-8')
+            # Preload only the launcher before its bounded startup clock. The
+            # checker and helper must not each import the entire server stack.
+            'import sys\n'
+            f'if sys.argv[0] == {str(launcher)!r}:\n'
+            '    import subprocess,uvicorn,mcp.server.mcpserver\n'
+            '    _real=subprocess.Popen\n'
+            '    def fake(argv,*args,**kwargs):\n'
+            f'        if not isinstance(argv,list) or not argv or argv[0] != {profile["helper"]["path"]!r}: return _real(argv,*args,**kwargs)\n'
+            f'        return _real([sys.executable,"-u","-c",{helper_code!r}],**kwargs)\n'
+            '    subprocess.Popen=fake\n',encoding='utf-8')
         fakechecker=data.base/'fake-checker.py'
         body=json.dumps(fixture.passed(),separators=(',',':'))+'\n'
-        fakechecker.write_text('import sys,pathlib\n' +
+        fakechecker.write_text('import sys,pathlib\nassert "uvicorn" not in sys.modules\n' +
             f'body={body!r}\n' +
             'pathlib.Path(sys.argv[sys.argv.index("--receipt")+1]).write_bytes(body.encode())\n' +
             'print(body,end="",flush=True)\n',encoding='utf-8')
@@ -102,16 +106,18 @@ class SupervisorTests(unittest.TestCase):
         adapter=data.base/'supervisor-test-adapter'; adapter.mkdir()
         helper_code = 'import time;print("https://fake.trycloudflare.com",flush=True);time.sleep(20)'
         (adapter/'sitecustomize.py').write_text(
-            'import subprocess,sys,uvicorn,mcp.server.mcpserver\n'
-            '_real=subprocess.Popen\n'
-            'def fake(argv,*args,**kwargs):\n'
-            f'    if not isinstance(argv,list) or not argv or argv[0] != {profile["helper"]["path"]!r}: return _real(argv,*args,**kwargs)\n'
-            f'    return _real([sys.executable,"-u","-c",{helper_code!r}],**kwargs)\n'
-            'subprocess.Popen=fake\n',encoding='utf-8')
+            'import sys\n'
+            f'if sys.argv[0] == {str(launcher)!r}:\n'
+            '    import subprocess,uvicorn,mcp.server.mcpserver\n'
+            '    _real=subprocess.Popen\n'
+            '    def fake(argv,*args,**kwargs):\n'
+            f'        if not isinstance(argv,list) or not argv or argv[0] != {profile["helper"]["path"]!r}: return _real(argv,*args,**kwargs)\n'
+            f'        return _real([sys.executable,"-u","-c",{helper_code!r}],**kwargs)\n'
+            '    subprocess.Popen=fake\n',encoding='utf-8')
         fakechecker=data.base/'fake-checker.py'
         failing=fixture.passed(); failing['checks']['challenge_match']=False
         body=json.dumps(failing,separators=(',',':'))+'\n'
-        fakechecker.write_text('import sys,pathlib\n' +
+        fakechecker.write_text('import sys,pathlib\nassert "uvicorn" not in sys.modules\n' +
             f'body={body!r}\n' +
             'pathlib.Path(sys.argv[sys.argv.index("--receipt")+1]).write_bytes(body.encode())\n' +
             'print(body,end="",flush=True)\n',encoding='utf-8')
