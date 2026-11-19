@@ -116,6 +116,35 @@ class InteractiveMemoryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.save(packet)
 
+    def test_inferred_reported_results_refused_before_any_staging_write(self):
+        for status in ('reported-completed', 'reported-passed', 'reported-failed'):
+            for support in ('inference', 'unsupported'):
+                with self.subTest(status=status, support=support):
+                    packet = copy.deepcopy(self.packet)
+                    packet.update(role='mixed', coverage='compacted-context', artifacts=[])
+                    packet['items'][0].update(
+                        kind='decision', status=status, support=support,
+                        references=['supplied synthetic compacted checkpoint'])
+                    with self.assertRaisesRegex(ValueError, '^RESULT_NEEDS_SUPPORT$'):
+                        self.save(packet)
+        self.assertEqual({p.name for p in self.root.iterdir()}, {'.private-staging.json'})
+
+    def test_compacted_inferred_decision_stages_without_promoting_evidence(self):
+        packet = copy.deepcopy(self.packet)
+        packet.update(role='mixed', coverage='compacted-context', artifacts=[])
+        packet['items'][0].update(
+            kind='decision', text='An inherited synthetic planning preference remains provisional.',
+            status='unknown', actor='other-session', support='inference',
+            references=['supplied synthetic compacted checkpoint'])
+        result = self.save(packet)
+        self.assertEqual(result['status'], 'STAGED')
+        archive = json.loads((self.root / result['source']).read_bytes())
+        self.assertEqual(archive['context_summary'], packet)
+        note = json.loads((self.root / result['candidate']).read_bytes())
+        self.assertEqual(note['interactive_capture']['coverage'], 'compacted-context')
+        self.assertIn('[unknown; actor=other-session; support=inference]', note['claims'][0]['text'])
+        self.assertNotIn('reported-completed', note['claims'][0]['text'])
+
     def test_external_history_credentials_and_traversal_artifacts_refused(self):
         for name in ('../outside.py', '/tmp/outside.py', '.codex/sessions/log.jsonl', '.env', 'auth.json', 'C:/outside.md'):
             with self.subTest(name=name), self.assertRaises((ValueError, OSError)):
@@ -189,6 +218,44 @@ class PublicationAdapterTests(unittest.TestCase):
 
     def flags(self):
         return ['--policy', str(self.fixture.policy_path), '--policy-sha256', self.fixture.pin]
+
+    def test_inferred_reported_decision_cli_refuses_before_staging_or_publication(self):
+        fixture = self.fixture
+        fixture.packet.update(role='mixed', coverage='compacted-context', artifacts=[])
+        fixture.packet['items'][0].update(support='inference')
+        before = {p.relative_to(fixture.root.parent): p.read_bytes()
+                  for p in fixture.root.parent.rglob('*') if p.is_file()}
+        process = self.cli(self.flags())
+        self.assertEqual(process.returncode, 2)
+        self.assertEqual(process.stdout, b'')
+        self.assertEqual(json.loads(process.stderr), {
+            'status': 'REFUSED', 'error_code': 'RESULT_NEEDS_SUPPORT', 'proposals': 0})
+        after = {p.relative_to(fixture.root.parent): p.read_bytes()
+                 for p in fixture.root.parent.rglob('*') if p.is_file()}
+        self.assertEqual(after, before)
+
+    def test_io_refusal_can_leave_partial_staging_without_publication(self):
+        import save_interactive_memory as adapter
+        import publish_memory as publisher
+        from types import SimpleNamespace
+        fixture = self.fixture
+        fixture.packet['items'][0]['text'] = 'A second synthetic decision for I/O diagnostics.'
+        before = set((fixture.root / 'archive').iterdir())
+        stdin = SimpleNamespace(buffer=io.BytesIO(json.dumps(fixture.packet).encode()))
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(sys, 'argv', ['adapter', '--root', str(fixture.root), *self.flags()]), \
+             patch.object(sys, 'stdin', stdin), patch.object(sys, 'stdout', output), \
+             patch.object(sys, 'stderr', errors), \
+             patch.object(Path, 'cwd', return_value=fixture.project), \
+             patch.object(adapter, 'render', side_effect=PermissionError('PRIVATE_EXCEPTION_CANARY')), \
+             patch.object(publisher, 'publish_staged') as publish:
+            self.assertEqual(adapter.main(), 2)
+        self.assertEqual(output.getvalue(), '')
+        self.assertEqual(json.loads(errors.getvalue()), {
+            'status': 'REFUSED', 'error_code': 'SAVE_REFUSED_IO_OR_FORMAT', 'proposals': 0})
+        self.assertEqual(len(set((fixture.root / 'archive').iterdir()) - before), 1)
+        self.assertEqual(list(fixture.vault.iterdir()), [])
+        publish.assert_not_called()
 
     def test_without_policy_preserves_exact_legacy_stage_output(self):
         fixture = self.fixture
