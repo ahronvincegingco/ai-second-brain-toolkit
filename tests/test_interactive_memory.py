@@ -142,6 +142,7 @@ class InteractiveMemoryTests(unittest.TestCase):
         self.assertEqual(archive['context_summary'], packet)
         note = json.loads((self.root / result['candidate']).read_bytes())
         self.assertEqual(note['interactive_capture']['coverage'], 'compacted-context')
+        self.assertEqual(note['claims'][0]['evidence'], 'inferred')
         self.assertIn('[unknown; actor=other-session; support=inference]', note['claims'][0]['text'])
         self.assertNotIn('reported-completed', note['claims'][0]['text'])
 
