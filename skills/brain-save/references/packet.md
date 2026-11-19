@@ -30,6 +30,57 @@ JSON, maximum 32 KB. Exactly these top-level fields:
 
 Use proposed for next actions and unexecuted tests. Reported results require visible support. Planners/reviewers cannot claim completed implementation work by this-session; use decision/review or attribute other-session correctly. A reviewer may report tests actually run in this reviewer conversation. All supplied conversation claims remain summary-derived (or inferred); local file hashes are independently checked separately. If roles change substantially, use mixed and preserve actor distinctions. Source references are annotations, not a promise that a whole transcript was archived or independently authenticated.
 
+## Evidence/status gate
+
+Check each item before the single adapter invocation. This rule applies to every
+kind, including decisions; a `mixed` role does not bypass it.
+
+| Status | Support allowed by the validator | Meaning |
+| --- | --- | --- |
+| `reported-completed`, `reported-passed`, `reported-failed` | `visible-tool-output`, `artifact`, `visible-user-message` | Cite the actual available support; the adapter does not independently authenticate it. |
+| `unknown` | Any declared support value, including `inference` | Preserve a claim whose outcome or historical evidence is uncertain. |
+| `proposed` | Any declared support value, including `inference` | An intended or unexecuted action; mandatory for `next-action` items. |
+| `blocked` | Any declared support value, including `inference` | A blocker, with its evidence and uncertainty retained. |
+
+`reported-completed` with `support: inference` is invalid even when references
+point to a compacted checkpoint. A reference describes provenance; it does not
+make an inferred result directly observed. Likewise, a written handoff alone does
+not independently verify the implementation or test outcomes it reports.
+
+For a planning claim available only through an inherited summary, a valid item is:
+
+```json
+{
+  "kind": "decision",
+  "text": "An inherited checkpoint describes a provisional navigation preference; confirm it before implementation.",
+  "status": "unknown",
+  "actor": "other-session",
+  "support": "inference",
+  "references": ["supplied compacted planning checkpoint"]
+}
+```
+
+Use `actor: unknown` when the actor is not established. Keep `coverage:
+compacted-context` when appropriate; that label neither upgrades the support nor
+requires downgrading genuinely visible evidence. Do not change `support` to a
+visible category unless that support is actually available. Never mark an
+unexecuted test as passed or failed to satisfy a schema.
+
+### Distinguish refusal causes
+
+- `RESULT_NEEDS_SUPPORT` identifies an invalid status/support pair. Validation
+  occurs before staging writes. Stop and report it; do not automatically rewrite
+  the packet and retry. A later owner-authorized invocation can use an accurately
+  classified packet.
+- `SAVE_REFUSED_IO_OR_FORMAT` is a generic caught I/O or format error, not proof
+  of a permission failure. A zero-proposal refusal does not prove that no partial
+  private staging artifacts were written. Preserve the receipt and diagnose only
+  within the authorized paths; do not redirect a real save, repin approval, or
+  weaken validation. Testing validation alone does not test write permissions.
+- Only `SAVE_BUSY_RETRY_ONCE` or nested publication `BUSY` permits the one
+  identical automatic retry described by the skill. Synthetic diagnostic tests
+  are separate from retrying a real save.
+
 ## Optional host publication settings
 
 The five-field packet stays unchanged. Policy paths, hashes, destinations, grants and
