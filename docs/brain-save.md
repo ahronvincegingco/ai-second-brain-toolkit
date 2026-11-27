@@ -97,6 +97,21 @@ JSON credential assignments. Do not include raw dialogue, secrets, personal cont
 details, personal absolute paths or unrelated information. Filtering is heuristic;
 it does not make raw personal context safe by itself.
 
+Every `reported-*` status requires `visible-tool-output`, `artifact`, or
+`visible-user-message` support, including a completed decision. If a planning claim
+is available only through a compacted summary, preserve it as `unknown` with
+`inference` support; keep unexecuted next actions `proposed`. Do not upgrade its
+support label merely to make the packet pass. The
+[packet evidence/status gate](../skills/brain-save/references/packet.md#evidence-status-gate)
+contains the exact combinations and an uncertainty-preserving example.
+
+`RESULT_NEEDS_SUPPORT` is a classification refusal before staging writes.
+`SAVE_REFUSED_IO_OR_FORMAT` is a separate generic error and does not establish a
+filesystem cause or the absence of partial staging artifacts. Correcting a packet
+does not resolve a host's managed output-folder restriction. Diagnose the current
+host separately; stop on refusal and retain the existing policy, pins and retry
+boundaries. No save is redirected to a substitute root to make it succeed.
+
 ## Staging, review and disable
 
 Staging artifacts stay under the configured private root:
