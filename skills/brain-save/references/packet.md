@@ -30,7 +30,7 @@ JSON, maximum 32 KB. Exactly these top-level fields:
 
 Use proposed for next actions and unexecuted tests. Reported results require visible support. Planners/reviewers cannot claim completed implementation work by this-session; use decision/review or attribute other-session correctly. A reviewer may report tests actually run in this reviewer conversation. All supplied conversation claims remain summary-derived (or inferred); local file hashes are independently checked separately. If roles change substantially, use mixed and preserve actor distinctions. Source references are annotations, not a promise that a whole transcript was archived or independently authenticated.
 
-## Evidence/status gate
+## Evidence status gate
 
 Check each item before the single adapter invocation. This rule applies to every
 kind, including decisions; a `mixed` role does not bypass it.
